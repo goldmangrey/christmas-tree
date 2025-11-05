@@ -1,0 +1,47 @@
+.
+├── README.md
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── public
+│   └── vite.svg
+├── src
+│   ├── App.css
+│   ├── App.jsx
+│   ├── assets
+│   │   ├── 452B86FE-849B-489A-91F5-154FA8AFC987.JPEG
+│   │   ├── 4E137BD4-EDF0-4D3F-8607-25696C95DEFD.JPEG
+│   │   ├── E7E20303-EDD2-4E2C-BA29-419C755454D2.JPEG
+│   │   ├── EE9ABF0C-91D2-4FC9-A7B2-2A9FF3F94A6C.JPEG
+│   │   └── react.svg
+│   ├── components
+│   │   ├── CartDrawer.jsx
+│   │   ├── CategoryTabs.jsx
+│   │   ├── Header.jsx
+│   │   ├── ProductCard.jsx
+│   │   ├── PromoCard.jsx
+│   │   └── QuickAddOverlay.jsx
+│   ├── index.css
+│   ├── lib
+│   │   ├── api.js
+│   │   └── firebase.js
+│   ├── main.jsx
+│   ├── pages
+│   │   ├── Checkout.jsx
+│   │   ├── Home.jsx
+│   │   ├── Moderator.jsx
+│   │   └── ProductDetail.jsx
+│   ├── routes.jsx
+│   ├── store
+│   │   ├── useCartStore.js
+│   │   ├── useProductsStore.js
+│   │   └── useUIStore.js
+│   └── styles
+│       └── tailwind.css
+├── structure.txt
+├── tailwind.config.js
+└── vite.config.js
+
+9 directories, 36 files
