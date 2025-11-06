@@ -49,7 +49,7 @@ export default function ProductDetail() {
     openCart();
   };
 
-  const deliveryCost = delivery === "express" ? 9.99 : 0;
+  const deliveryCost = delivery === "express" ? 2500 : 0;
 
   return (
     <AnimatePresence>
@@ -156,7 +156,7 @@ export default function ProductDetail() {
               >
                 <div>
                   <p className="font-medium">
-                    Free (1–{product.deliveryDays} days)
+                    Бесплатная Доставка (в течение дня)
                   </p>
                   <p className="text-xs text-gray-500">Standard shipping</p>
                 </div>
@@ -176,11 +176,13 @@ export default function ProductDetail() {
                 }`}
               >
                 <div>
-                  <p className="font-medium">Express (today)</p>
-                  <p className="text-xs text-gray-500">Ships within 2 hours</p>
+                  <p className="font-medium">Express (Сегодня)</p>
+                  <p className="text-xs text-gray-500">
+                    Доставят в течение 2-3 часов
+                  </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium">+${deliveryCost.toFixed(2)}</p>
+                  <p className="font-medium">+₸{deliveryCost}</p>
                   <input
                     type="radio"
                     name="delivery"
