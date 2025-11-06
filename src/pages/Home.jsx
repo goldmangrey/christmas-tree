@@ -5,6 +5,7 @@ import { useProductsStore } from "../store/useProductsStore";
 // import { useUIStore } from "../store/useUIStore";
 // 2. Убедимся, что импортирован useCartStore
 import { useCartStore } from "../store/useCartStore";
+import CandyLoader from "../components/CandyLoader";
 
 import Header from "../components/Header";
 import CategoryTabs from "../components/CategoryTabs";
@@ -21,7 +22,12 @@ export default function Home() {
   // const openQuickAdd = useUIStore((s) => s.openQuickAdd);
 
   const [tab, setTab] = useState("Trees");
+  const [loadTime, setLoadTime] = useState(0);
 
+  useEffect(() => {
+    const start = Date.now();
+    fetch().finally(() => setLoadTime(Date.now() - start));
+  }, [fetch]);
   useEffect(() => {
     if (products.length === 0) {
       fetch();
@@ -56,7 +62,7 @@ export default function Home() {
       <Header />
       <CategoryTabs active={tab} onChange={setTab} />
 
-      {loading && <p className="text-center p-10">Loading...</p>}
+      <CandyLoader loading={loading} duration={loadTime} />
 
       <div className="grid grid-cols-2 gap-3 px-4 pt-3">
         <div className="flex flex-col gap-3">{left}</div>

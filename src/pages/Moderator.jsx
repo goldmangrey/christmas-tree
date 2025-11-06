@@ -49,7 +49,7 @@ function SortableItem({ product, onEdit, onDelete }) {
         <p className="font-semibold text-sm">
           {product.name}{" "}
           <span className="text-xs font-normal text-gray-500">
-            (${product.price})
+            (₸{product.price}) {/* <-- Я также поменял $ на ₸ здесь */}
           </span>
         </p>
         <p className="text-xs text-gray-500">{product.sizeRange}</p>
@@ -83,7 +83,6 @@ export default function Moderator() {
   const [passwordInput, setPasswordInput] = useState("");
   const [isLoading, setIsLoading] = useState(false); // <-- Для кнопки
   const [error, setError] = useState(null); // <-- Для ошибок
-  // const CORRECT_PASSWORD = "20112014"; // <-- Больше не нужен
   // ---
 
   useEffect(() => {
@@ -121,12 +120,19 @@ export default function Moderator() {
       ...data,
       price: parseFloat(data.price),
     };
+
+    let productId = null;
     if (editingProduct) {
-      productToSave.id = editingProduct.id;
+      // Если редактируем, получаем ID для обновления
+      productId = editingProduct.id;
     } else {
+      // Если создаем новый, ставим ему 'orderIndex'
       productToSave.orderIndex = products.length;
     }
-    await upsert(productToSave);
+
+    // 'productToSave' больше НЕ содержит 'id'
+    // Мы передаем ID вторым аргументом
+    await upsert(productToSave, productId);
     setEditingProduct(null);
   };
 
@@ -221,6 +227,10 @@ export default function Moderator() {
     );
   }
 
+  // --- 1. ИСПРАВЛЕНИЕ ---
+  // Создаем массив ТОЛЬКО из ID, как того требует @dnd-kit
+  const productIds = products.map((p) => p.id);
+
   // --- СТАРАЯ СТРАНИЦА МОДЕРАТОРА (остается без изменений) ---
   return (
     <div className="p-4 space-y-6">
@@ -231,6 +241,7 @@ export default function Moderator() {
         onSubmit={handleSubmit(onSubmit)}
         className="bg-white p-4 rounded-2xl shadow space-y-3"
       >
+        {/* ... (код формы без изменений) ... */}
         <h2 className="text-lg font-semibold">
           {editingProduct ? "Edit Product" : "Create Product"}
         </h2>
@@ -300,7 +311,9 @@ export default function Moderator() {
           modifiers={[restrictToVerticalAxis]}
         >
           <SortableContext
-            items={products}
+            // --- 2. ИСПРАВЛЕНИЕ ---
+            // Передаем сюда массив ID, а не массив объектов
+            items={productIds}
             strategy={verticalListSortingStrategy}
           >
             <div className="space-y-2">

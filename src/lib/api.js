@@ -31,6 +31,7 @@ export async function listProducts() {
     const querySnapshot = await getDocs(q);
     const products = [];
     querySnapshot.forEach((doc) => {
+        // id: doc.id - это ID документа, doc.data() - это его поля
         products.push({ id: doc.id, ...doc.data() });
     });
     return products;
@@ -50,18 +51,21 @@ export async function getProduct(id) {
     }
 }
 
-// Создаем или Обновляем продукт
-export async function upsertProduct(p) {
-    console.log("API: upsertProduct (Firebase)", p.id);
-
-    if (p.id) {
-        // Если ID есть, обновляем существующий
-        const docRef = doc(db, "products", p.id);
-        await setDoc(docRef, p, { merge: true }); // merge: true - не затирает, а обновляет
-        return p.id;
+// ⬇️⬇️ ИСПРАВЛЕННАЯ ФУНКЦИЯ ⬇️⬇️
+// Теперь она принимает 'productData' (данные) и 'id' (ID) отдельно.
+export async function upsertProduct(productData, id = null) {
+    if (id) {
+        // Путь Обновления (Редактирование или Сортировка)
+        // 'productData' может быть {name: ...} или {orderIndex: ...}
+        const docRef = doc(db, "products", id);
+        // 'merge: true' гарантирует, что мы только обновим поля,
+        // а не сотрем весь документ
+        await setDoc(docRef, productData, { merge: true });
+        return id;
     } else {
-        // Если ID нет, создаем новый
-        const docRef = await addDoc(productsCollection, p);
+        // Путь Создания (Новый товар)
+        // 'productData' - это полный объект нового товара
+        const docRef = await addDoc(productsCollection, productData);
         return docRef.id; // Возвращаем ID, созданный Firebase
     }
 }
@@ -75,19 +79,12 @@ export async function deleteProduct(id) {
 
 // --- Storage (Image Upload) ---
 
-// Загружаем картинку
+// (Эта функция остается без изменений)
 export async function uploadImage(file) {
     console.log("API: uploadImage (Firebase)");
-
-    // Создаем уникальное имя файла
     const storageRef = ref(storage, `products/${Date.now()}-${file.name}`);
-
-    // Загружаем файл
     const snapshot = await uploadBytes(storageRef, file);
-
-    // Получаем публичный URL для скачивания
     const downloadURL = await getDownloadURL(snapshot.ref);
-
     console.log("File available at", downloadURL);
     return downloadURL;
 }
