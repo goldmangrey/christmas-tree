@@ -2,10 +2,14 @@ import { useEffect, useState } from "react";
 import { useProductsStore } from "../store/useProductsStore";
 import { useForm } from "react-hook-form";
 import * as api from "../lib/api";
+
+// ⬇️⬇️ 1. ОБНОВЛЕННЫЕ ИМПОРТЫ D&D ⬇️⬇️
 import {
   DndContext,
   closestCenter,
   PointerSensor,
+  TouchSensor, // <-- Добавили TouchSensor
+  KeyboardSensor, // <-- Добавили KeyboardSensor
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -14,7 +18,10 @@ import {
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
+  sortableKeyboardCoordinates, // <-- Добавили 'sortableKeyboardCoordinates'
 } from "@dnd-kit/sortable";
+// ⬆️⬆️ КОНЕЦ ОБНОВЛЕНИЯ ⬆️⬆️
+
 import { CSS } from "@dnd-kit/utilities";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 
@@ -49,7 +56,7 @@ function SortableItem({ product, onEdit, onDelete }) {
         <p className="font-semibold text-sm">
           {product.name}{" "}
           <span className="text-xs font-normal text-gray-500">
-            (₸{product.price}) {/* <-- Я также поменял $ на ₸ здесь */}
+            (₸{product.price})
           </span>
         </p>
         <p className="text-xs text-gray-500">{product.sizeRange}</p>
@@ -77,13 +84,11 @@ export default function Moderator() {
   const [isUploading, setIsUploading] = useState(false);
   const { register, handleSubmit, reset, setValue } = useForm();
 
-  // --- ОБНОВЛЕННАЯ ЛОГИКА АВТОРИЗАЦИИ ---
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [emailInput, setEmailInput] = useState(""); // <-- Добавили Email
+  const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // <-- Для кнопки
-  const [error, setError] = useState(null); // <-- Для ошибок
-  // ---
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -123,20 +128,24 @@ export default function Moderator() {
 
     let productId = null;
     if (editingProduct) {
-      // Если редактируем, получаем ID для обновления
       productId = editingProduct.id;
     } else {
-      // Если создаем новый, ставим ему 'orderIndex'
       productToSave.orderIndex = products.length;
     }
-
-    // 'productToSave' больше НЕ содержит 'id'
-    // Мы передаем ID вторым аргументом
     await upsert(productToSave, productId);
     setEditingProduct(null);
   };
 
-  const sensors = useSensors(useSensor(PointerSensor));
+  // ⬇️⬇️ 2. ОБНОВЛЕННЫЕ СЕНСОРЫ ⬇️⬇️
+  // Мы добавляем TouchSensor (для мобильных) и KeyboardSensor (для клавиатуры)
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(TouchSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+  // ⬆️⬆️ КОНЕЦ ОБНОВЛЕНИЯ ⬆️⬆️
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
@@ -154,19 +163,14 @@ export default function Moderator() {
     }
   };
 
-  // --- НОВЫЙ ОБРАБОТЧИК ВХОДА С FIREBASE ---
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-
     try {
-      // Пытаемся войти
       await signInWithEmailAndPassword(auth, emailInput, passwordInput);
-      // Если успешно:
       setIsAuthenticated(true);
     } catch (err) {
-      // Если ошибка:
       console.error(err.code, err.message);
       if (err.code === "auth/invalid-credential") {
         setError("Неверный email или пароль.");
@@ -174,12 +178,10 @@ export default function Moderator() {
         setError("Ошибка входа.");
       }
     } finally {
-      // В любом случае
       setIsLoading(false);
     }
   };
 
-  // --- ОБНОВЛЕННЫЙ ЭКРАН ВХОДА ---
   if (!isAuthenticated) {
     return (
       <div className="flex items-center justify-center min-h-screen p-4 bg-gray-50">
@@ -190,8 +192,6 @@ export default function Moderator() {
           <h1 className="text-xl font-bold mb-4 text-center">
             Moderator Access
           </h1>
-
-          {/* Поле Email */}
           <input
             type="email"
             value={emailInput}
@@ -200,8 +200,6 @@ export default function Moderator() {
             placeholder="Email"
             required
           />
-
-          {/* Поле Пароль */}
           <input
             type="password"
             value={passwordInput}
@@ -210,13 +208,10 @@ export default function Moderator() {
             placeholder="Пароль"
             required
           />
-
-          {/* Сообщение об ошибке */}
           {error && <p className="text-sm text-red-500 text-center">{error}</p>}
-
           <button
             type="submit"
-            disabled={isLoading} // Блокируем кнопку во время загрузки
+            disabled={isLoading}
             className="w-full h-11 bg-green-600 text-white rounded-lg font-semibold transition-colors
                        disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
@@ -227,21 +222,17 @@ export default function Moderator() {
     );
   }
 
-  // --- 1. ИСПРАВЛЕНИЕ ---
-  // Создаем массив ТОЛЬКО из ID, как того требует @dnd-kit
   const productIds = products.map((p) => p.id);
 
-  // --- СТАРАЯ СТРАНИЦА МОДЕРАТОРА (остается без изменений) ---
   return (
     <div className="p-4 space-y-6">
-      <h1 className="text-2xl font-bold">Moderator Panel</h1>
+      <h1 className="text-xl font-bold">Moderator Panel</h1>
 
-      {/* Форма CRUD */}
+      {/* Форма CRUD (без изменений) */}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="bg-white p-4 rounded-2xl shadow space-y-3"
       >
-        {/* ... (код формы без изменений) ... */}
         <h2 className="text-lg font-semibold">
           {editingProduct ? "Edit Product" : "Create Product"}
         </h2>
@@ -299,20 +290,18 @@ export default function Moderator() {
         </div>
       </form>
 
-      {/* Список с D&D */}
+      {/* Список с D&D (без изменений) */}
       <div>
         <h2 className="text-lg font-semibold mb-3">
           Product Order (Drag & Drop)
         </h2>
         <DndContext
-          sensors={sensors}
+          sensors={sensors} // Сюда передается наш новый, полный набор сенсоров
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
           modifiers={[restrictToVerticalAxis]}
         >
           <SortableContext
-            // --- 2. ИСПРАВЛЕНИЕ ---
-            // Передаем сюда массив ID, а не массив объектов
             items={productIds}
             strategy={verticalListSortingStrategy}
           >
