@@ -9,7 +9,7 @@ const firebaseConfig = {
     apiKey: "AIzaSyCdV5ZzJTeWasgeLGf3vDrHcWhOYN0r5s8",
     authDomain: "christmas-72937.firebaseapp.com",
     projectId: "christmas-72937",
-    storageBucket: "christmas-72937.appspot.com", // ⚠️ исправлено: должно быть .appspot.com
+    storageBucket: "christmas-72937.firebasestorage.app", // ✅ оставляем именно это
     messagingSenderId: "410074346443",
     appId: "1:410074346443:web:3f59afc6f0a924b5b17c4e",
     measurementId: "G-4BQK0WR1N5",
