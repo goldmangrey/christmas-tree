@@ -49,7 +49,7 @@ export default function CartDrawer() {
       >
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-xl font-bold">My Cart</h2>
+          <h2 className="text-xl font-bold">Корзина</h2>
           <button onClick={closeCart} className="text-2xl opacity-50">
             &times;
           </button>
@@ -58,9 +58,7 @@ export default function CartDrawer() {
         {/* Items List */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {items.length === 0 && (
-            <p className="text-gray-500 text-center mt-10">
-              Your cart is empty.
-            </p>
+            <p className="text-gray-500 text-center mt-10">Корзина пустая.</p>
           )}
 
           {items.map((item) => {
@@ -81,7 +79,7 @@ export default function CartDrawer() {
                   <h4 className="font-semibold text-sm">{product.name}</h4>
                   <p className="text-xs text-gray-500">{product.sizeRange}</p>
                   <p className="font-bold text-sm mt-1">
-                    ${(product.price * item.qty).toFixed(2)}
+                    ₸{(product.price * item.qty).toFixed(2)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -105,7 +103,7 @@ export default function CartDrawer() {
                   onClick={() => remove(item.productId)}
                   className="text-red-500 text-xs ml-2"
                 >
-                  Delete
+                  Удалить
                 </button>
               </div>
             );
@@ -117,19 +115,19 @@ export default function CartDrawer() {
             onClick={clear}
             className="text-center text-xs text-red-500 p-2"
           >
-            Clear Cart
+            Очистить корзину
           </button>
         )}
 
         {/* Footer */}
         <div className="p-4 border-t shadow-[0_-8px_24px_rgba(0,0,0,0.05)]">
           <div className="flex justify-between items-center mb-3">
-            <span className="text-gray-600">Subtotal</span>
-            <span className="text-xl font-bold">${subtotal.toFixed(2)}</span>
+            <span className="text-gray-600">Итог</span>
+            <span className="text-xl font-bold">₸{subtotal.toFixed(2)}</span>
           </div>
           <Link to="/checkout" onClick={closeCart}>
             <button className="w-full h-12 rounded-xl bg-green-600 text-white font-semibold">
-              Proceed to Checkout
+              Перейти к оформлению заказа
             </button>
           </Link>
         </div>
