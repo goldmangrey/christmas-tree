@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-// 1. Импортируем AnimatePresence для лайтбокса
 import { motion, AnimatePresence } from "framer-motion";
 import { useProductsStore } from "../store/useProductsStore";
 import { useCartStore } from "../store/useCartStore";
@@ -15,8 +14,14 @@ export default function ProductDetail() {
     location.state?.product || productFromStore
   );
 
-  // 2. Состояние для лайтбокса (просмотра фото)
+  // --- НОВЫЕ СОСТОЯНИЯ ---
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  // 1. Состояние для плашки: 'closed' (62vh) или 'open' (25vh)
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  // 2. Состояние для кнопки "Читать еще"
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
 
   const [qty, setQty] = useState(1);
   const [delivery, setDelivery] = useState("free");
@@ -29,6 +34,12 @@ export default function ProductDetail() {
     window.scrollTo(0, 0);
   }, [id, product]);
 
+  // 3. Варианты для анимации плашки (декларативный способ)
+  const sheetVariants = {
+    closed: { y: "62vh" }, // 62% от верха экрана
+    open: { y: "25vh" }, // 25% от верха экрана
+  };
+
   if (!product) {
     return <div className="h-screen grid place-items-center">Loading...</div>;
   }
@@ -40,13 +51,7 @@ export default function ProductDetail() {
 
   const deliveryCost = delivery === "express" ? 9.99 : 0;
 
-  // 3. Высота, на которой плашка "открыта" (в vh от верха экрана)
-  const sheetOpenY = 25; // 25vh
-  // 4. Высота, на которой плашка "закрыта" (по умолчанию)
-  const sheetClosedY = 62; // 62vh
-
   return (
-    // 5. Обертка AnimatePresence для анимации лайтбокса
     <AnimatePresence>
       <div className="relative h-screen max-h-[-webkit-fill-available] overflow-hidden">
         {/* Header (Back button) */}
@@ -61,7 +66,6 @@ export default function ProductDetail() {
 
         {/* Gallery */}
         <div className="relative h-[65vh] bg-gray-100">
-          {/* 6. Обертка-кнопка для открытия лайтбокса */}
           <button
             className="w-full h-full"
             onClick={() => setIsLightboxOpen(true)}
@@ -70,41 +74,46 @@ export default function ProductDetail() {
               layoutId={`image-${product.id}`}
               src={product.images[0]}
               alt={product.name}
-              // 7. Картинка теперь 'object-cover' (заполняет), а не 'object-contain'
               className="w-full h-full object-cover"
               transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
             />
           </button>
         </div>
 
-        {/* 8. Подвижная плашка (Draggable Sheet) */}
+        {/* --- ПОЛНОСТЬЮ ПЕРЕРАБОТАННАЯ ПЛАШКА --- */}
         <motion.div
-          drag="y" // Включаем drag по оси Y
+          drag="y"
+          // 4. ИСПРАВЛЕНИЕ: Границы перетаскивания.
+          // Позволяем тащить от 25vh (верх) до 90vh (максимально вниз)
           dragConstraints={{
-            top: sheetOpenY * (window.innerHeight / 100),
-            bottom: sheetClosedY * (window.innerHeight / 100),
+            top: window.innerHeight * 0.25,
+            bottom: window.innerHeight * 0.9,
           }}
-          dragElastic={0.2} // "Пружинистость" на краях
-          dragSnapToOrigin={false} // Не возвращаться в начало
-          initial={{ y: sheetClosedY * (window.innerHeight / 100) }} // 9. Начальная позиция (низко)
-          // Анимация при отпускании (привязка к верху или низу)
+          dragElastic={0.2}
+          // 5. ИСПРАВЛЕНИЕ: Используем 'variants' и 'animate'
+          // Это убирает лаги и делает анимацию "чувствительной"
+          variants={sheetVariants}
+          animate={isSheetOpen ? "open" : "closed"}
+          transition={{ type: "spring", damping: 40, stiffness: 400 }}
+          // 6. ИСПРАВЛЕНИЕ: Логика "отпускания"
+          // Привязываем к состоянию, а не к стилям
           onDragEnd={(event, info) => {
             if (info.offset.y < -100) {
-              // Если потянули вверх, привязать к верху
-              info.panSession.target.style.transform = `translateY(${sheetOpenY}vh)`;
+              // Если потянули вверх
+              setIsSheetOpen(true);
             } else if (info.offset.y > 100) {
-              // Если потянули вниз, привязать к низу
-              info.panSession.target.style.transform = `translateY(${sheetClosedY}vh)`;
+              // Если потянули вниз
+              setIsSheetOpen(false);
             }
           }}
+          initial={false} // Не анимировать при загрузке
           className="absolute top-0 left-0 right-0 h-auto max-h-[90vh] max-w-[390px] mx-auto bg-white rounded-t-3xl shadow-md z-10"
         >
-          {/* 10. "Ручка" для перетаскивания */}
+          {/* "Ручка" для перетаскивания */}
           <div className="w-full py-3 flex justify-center cursor-grab">
             <div className="w-10 h-1.5 rounded-full bg-gray-300" />
           </div>
 
-          {/* 11. Контент плашки с overflow-y-auto */}
           <div
             className="p-4 pt-0 overflow-y-auto"
             style={{ maxHeight: "calc(90vh - 100px)" }}
@@ -119,7 +128,21 @@ export default function ProductDetail() {
               </span>
             </div>
 
-            <p className="text-sm text-gray-600 mt-3">{product.fullDesc}</p>
+            {/* --- 7. НОВАЯ ЛОГИКА "ЧИТАТЬ ЕЩЕ" --- */}
+            <p
+              className={`text-sm text-gray-600 mt-3 transition-all duration-200 ${
+                !isDescExpanded ? "line-clamp-2" : "" // Сворачиваем до 2 строк
+              }`}
+            >
+              {product.fullDesc}
+            </p>
+            <button
+              onClick={() => setIsDescExpanded(!isDescExpanded)}
+              className="text-sm font-semibold text-green-600 mt-1"
+            >
+              {isDescExpanded ? "Скрыть" : "Читать еще"}
+            </button>
+            {/* --- Конец нового блока --- */}
 
             {/* Delivery Options */}
             <div className="mt-4 space-y-2">
@@ -197,7 +220,7 @@ export default function ProductDetail() {
         </motion.div>
       </div>
 
-      {/* 12. Компонент Лайтбокса (Fullscreen Image Viewer) */}
+      {/* Лайтбокс (остается без изменений) */}
       {isLightboxOpen && (
         <motion.div
           onClick={() => setIsLightboxOpen(false)}
@@ -206,7 +229,6 @@ export default function ProductDetail() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          {/* Анимация layoutId переносит картинку с карточки сюда */}
           <motion.img
             layoutId={`image-${product.id}`}
             src={product.images[0]}
