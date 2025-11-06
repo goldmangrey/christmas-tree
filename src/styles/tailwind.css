@@ -2,12 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Добавим базовый стиль для безопасных отступов, как в спеке */
+/*
+  1. Убираем стили с body, чтобы fixed-элементы (оверлеи)
+     работали на 100% ширины экрана.
+*/
 
 body {
-    /* 390px - (16px * 2) = 358px */
+    background-color: #f9fafb;
+    /* Оставим только фон */
+}
+
+
+/*
+  2. Создаем класс-контейнер, который теперь будет
+     ограничивать ширину твоего сайта.
+*/
+
+.app-container {
     max-width: 390px;
     margin: 0 auto;
-    background-color: #f9fafb;
-    /* light gray bg */
+    position: relative;
+    /* Важно для sticky-элементов внутри */
+    min-height: 100vh;
 }

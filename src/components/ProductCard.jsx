@@ -13,10 +13,7 @@ export default function ProductCard({ p, onQuickAdd }) {
       </button>
 
       <Link to={`/product/${p.id}`} state={{ product: p }}>
-        {/*
-          ИЗМЕНЕНИЕ 1:
-          Вернул 'aspect-[4/5]', чтобы карточки снова стали "длинными".
-        */}
+        {/* Оставляем aspect-[3/5] (высокая карточка), как в твоем файле */}
         <div className="aspect-[3/5]">
           <motion.img
             layoutId={`image-${p.id}`}
@@ -27,27 +24,27 @@ export default function ProductCard({ p, onQuickAdd }) {
           />
         </div>
 
-        {/*
-          ИЗМЕНЕНИЕ 2:
-          Фон оверлея сделан 100% прозрачным.
-          - Убраны: 'bg-white/85', 'backdrop-blur', 'rounded-t-xl'
-          - Добавлен: 'text-white' (чтобы весь текст стал белым)
-        */}
+        {/* Оставляем черный текст, как в твоем файле
+         */}
         <div className="absolute left-0 right-0 bottom-0 h-14 px-3 py-2 text-black">
           <div className="flex items-end h-full">
-            <div className="flex-1">
-              {/* Добавил 'drop-shadow-md' для читаемости */}
+            {/*
+              ⬇️⬇️ ГЛАВНОЕ ИСПРАВЛЕНИЕ ⬇️⬇️
+              Добавлен класс 'min-w-0', чтобы flex-блок мог сжиматься,
+              и 'truncate' у дочернего элемента заработал.
+            */}
+            <div className="flex-1 min-w-0">
               <div className="text-[14px] font-semibold leading-4 truncate drop-shadow-md">
                 {p.name}
               </div>
-              <div className="text-[12px] opacity-70 leading-4 drop-shadow-md">
+              <div className="text-[12px] opacity-70 leading-4 truncate drop-shadow-md">
                 {p.sizeRange}
               </div>
             </div>
-            <div className="text-right">
-              {/* Добавил 'drop-shadow-md' для читаемости */}
-              <div className="text-[18px] font-bold leading-5 drop-shadow-md">
-                ${p.price.toFixed(2)}
+
+            <div className="text-right flex-shrink-0">
+              <div className="text-[12px] font-bold leading-5 drop-shadow-md">
+                ₸{p.price.toFixed(2)}
               </div>
               <div className="text-[11px] opacity-60 leading-4 drop-shadow-md">
                 per item
